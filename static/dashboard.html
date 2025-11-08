@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Monitor de Recursos</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #e6ffe6 0%, #c8e6c9 100%);
+        color: #1a4b26;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        font-size: 2.5em;
+      }
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 30px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      }
+      .card h2 {
+        font-size: 1.2em;
+        margin-bottom: 15px;
+      }
+      .percentage {
+        font-size: 3em;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+      .bar {
+        height: 20px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        overflow: hidden;
+      }
+      .bar-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4ade80, #22c55e);
+        transition: all 0.5s ease;
+      }
+      .alert {
+        background: linear-gradient(90deg, #ef4444, #dc2626) !important;
+      }
+      .alertas-lista {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
+        padding: 20px;
+        max-height: 400px;
+        overflow-y: auto;
+      }
+      .alerta-item {
+        background: rgba(239, 68, 68, 0.2);
+        padding: 10px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        border-left: 4px solid #ef4444;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🖥️ Monitor de Recursos em Tempo Real</h1>
+
+      <div class="cards">
+        <div class="card" id="cpu-card">
+          <h2>💻 CPU</h2>
+          <div class="percentage" id="cpu-value">0%</div>
+          <div class="bar"><div class="bar-fill" id="cpu-bar"></div></div>
+        </div>
+
+        <div class="card" id="mem-card">
+          <h2>🧠 Memória</h2>
+          <div class="percentage" id="mem-value">0%</div>
+          <div class="bar"><div class="bar-fill" id="mem-bar"></div></div>
+        </div>
+
+        <div class="card" id="disk-card">
+          <h2>💾 Disco</h2>
+          <div class="percentage" id="disk-value">0%</div>
+          <div class="bar"><div class="bar-fill" id="disk-bar"></div></div>
+        </div>
+      </div>
+
+      <div class="alertas-lista">
+        <h2>🚨 Alertas Recentes (24h)</h2>
+        <div id="alertas-container">Carregando...</div>
+      </div>
+    </div>
+
+    <script>
+      function atualizarDados() {
+        fetch("/api/status")
+          .then((r) => r.json())
+          .then((dados) => {
+            atualizarCard("cpu", dados.cpu);
+            atualizarCard("mem", dados.memoria);
+            atualizarCard("disk", dados.disco);
+          });
+
+        fetch("/api/alertas")
+          .then((r) => r.json())
+          .then((alertas) => {
+            const container = document.getElementById("alertas-container");
+            if (alertas.length === 0) {
+              container.innerHTML = "<p>Nenhum alerta registrado 😊</p>";
+            } else {
+              container.innerHTML = alertas
+                .map((a) => `<div class="alerta-item">${a.mensagem}</div>`)
+                .join("");
+            }
+          });
+      }
+
+      function atualizarCard(tipo, valor) {
+        document.getElementById(`${tipo}-value`).textContent = `${valor.toFixed(
+          1
+        )}%`;
+        document.getElementById(`${tipo}-bar`).style.width = `${valor}%`;
+
+        const card = document.getElementById(`${tipo}-card`);
+        const bar = document.getElementById(`${tipo}-bar`);
+
+        if (valor > 90) {
+          bar.classList.add("alert");
+          card.style.animation = "pulse 1s infinite";
+        } else {
+          bar.classList.remove("alert");
+          card.style.animation = "none";
+        }
+      }
+
+      atualizarDados();
+      setInterval(atualizarDados, 5000);
+    </script>
+  </body>
+</html>

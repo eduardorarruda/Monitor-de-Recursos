@@ -1,0 +1,20 @@
+{
+  "limites": {
+    "cpu": 90,
+    "memoria": 90,
+    "disco": 90
+  },
+  "intervalo_verificacao": 10,
+  "email": {
+    "ativo": true,
+    "smtp_server": "smtp.gmail.com",
+    "smtp_port": 587,
+    "remetente": "durarruda@gmail.com",
+    "senha": "zzsy jwop zcjk nawa",
+    "destinatario": "durarruda123@gmail.com"
+  },
+  "limpeza_logs": {
+    "ativo": true,
+    "dias_manter": 7
+  }
+}
